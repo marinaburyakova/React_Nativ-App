@@ -1,9 +1,10 @@
 import React from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { Formik } from 'formik';
 import * as yup from 'yup';
+import { useNavigate } from 'react-router-native'; // Импортируем хук перенаправления страниц
+import useSignIn from '../hooks/useSignIn'; // Импортируем наш хук авторизации
 
-// Схема валидации данных через Yup по спецификации курса
 const validationSchema = yup.object().shape({
   username: yup
     .string()
@@ -15,14 +16,31 @@ const validationSchema = yup.object().shape({
 });
 
 const SignIn = () => {
+  const [signIn] = useSignIn(); // Инициализируем хук мутации
+  const navigate = useNavigate(); // Инициализируем менеджер путей
+
   const initialValues = {
     username: '',
     password: '',
   };
 
-  const onSubmit = (values: typeof initialValues) => {
-    console.log('Submitted values:', values);
-    // В следующих упражнениях здесь будет вызов GraphQL мутации авторизации
+  const onSubmit = async (values: typeof initialValues) => {
+    const { username, password } = values;
+
+    try {
+      // Вызываем асинхронную функцию входа
+      await signIn({ username, password });
+      
+      // Если ошибок нет — выводим нативное уведомление об успехе
+      Alert.alert('Успех!', 'Вы успешно вошли в систему!');
+      
+      // Автоматически перенаправляем пользователя на главную страницу к списку репозиториев
+      navigate('/');
+    } catch (e: unknown) {
+      const errorMsg = e instanceof Error ? e.message : 'Unknown authorization error';
+      console.error('SIGN IN FAILED:', errorMsg);
+      Alert.alert('Ошибка авторизации', 'Неверное имя пользователя или пароль');
+    }
   };
 
   return (
@@ -35,7 +53,6 @@ const SignIn = () => {
         <View style={styles.container}>
           <Text style={styles.title}>Sign In</Text>
 
-          {/* Поле ввода Username */}
           <View style={styles.inputContainer}>
             <TextInput
               style={[
@@ -54,7 +71,6 @@ const SignIn = () => {
             )}
           </View>
 
-          {/* Поле ввода Password */}
           <View style={styles.inputContainer}>
             <TextInput
               style={[
@@ -63,7 +79,7 @@ const SignIn = () => {
               ]}
               placeholder="Password"
               placeholderTextColor="#999"
-              secureTextEntry={true} // Скрывает вводимые символы (пароль)
+              secureTextEntry={true}
               onChangeText={handleChange('password')}
               onBlur={handleBlur('password')}
               value={values.password}
@@ -74,7 +90,6 @@ const SignIn = () => {
             )}
           </View>
 
-          {/* Кастомная кнопка отправки формы */}
           <TouchableOpacity 
             style={styles.button} 
             onPress={() => handleSubmit()}
@@ -117,7 +132,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   inputError: {
-    borderColor: '#d73a49', // Красная граница при ошибке валидации
+    borderColor: '#d73a49',
   },
   errorText: {
     color: '#d73a49',
@@ -126,7 +141,7 @@ const styles = StyleSheet.create({
     paddingLeft: 4,
   },
   button: {
-    backgroundColor: '#0366d6', // Синий фирменный цвет кнопок GitHub
+    backgroundColor: '#0366d6',
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
