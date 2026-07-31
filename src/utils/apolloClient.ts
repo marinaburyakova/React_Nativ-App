@@ -1,14 +1,35 @@
 import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client'
+import { setContext } from '@apollo/client/link/context';
+import AuthStorage from './authStorage';
 
 const httpLink = createHttpLink({
   uri: 'http://192.168.0.110:4005/graphql',
 })
 
+const authStorage = new AuthStorage();
+
+// Создаем специальный слой (link), который автоматически внедряет JWT-токен в каждый запрос!
+const authLink = setContext(async (_, { headers }) => {
+  try {
+    const accessToken = await authStorage.getAccessToken();
+    return {
+      headers: {
+        ...headers,
+        authorization: accessToken ? `Bearer ${accessToken}` : '',
+      },
+    };
+  } catch (e) {
+    console.error('Error fetching token from storage:', e);
+    return { headers };
+  }
+});
+
 const createApolloClient = () => {
   return new ApolloClient({
-    link: httpLink,
+    // Склеиваем авторизационный слой и наш HTTP-адрес
+    link: authLink.concat(httpLink),
     cache: new InMemoryCache(),
-  })
-}
+  });
+};
 
-export default createApolloClient
+export default createApolloClient;

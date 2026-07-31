@@ -1,7 +1,6 @@
 import { useQuery } from '@apollo/client/react';
 import { GET_REPOSITORIES } from '../graphql/queries';
 
-// Описываем структуру ответа от GraphQL сервера
 interface RepositoryNode {
   id: string;
   fullName: string;
@@ -11,6 +10,7 @@ interface RepositoryNode {
   stargazersCount: number;
   ratingAverage: number;
   reviewCount: number;
+  ownerAvatarUrl: string;
 }
 
 interface GetRepositoriesData {
@@ -21,13 +21,20 @@ interface GetRepositoriesData {
   };
 }
 
-const useRepositories = () => {
-  // Вызываем нативный хук useQuery от Apollo Client
+// Перечисляем аргументы, которые принимает хук
+interface UseRepositoriesVariables {
+  orderBy?: 'CREATED_AT' | 'RATING_AVERAGE';
+  orderDirection?: 'ASC' | 'DESC';
+  searchKeyword?: string;
+}
+
+const useRepositories = (variables: UseRepositoriesVariables) => {
+  // Передаем переменные фильтрации и сортировки напрямую в useQuery!
   const { data, error, loading, refetch } = useQuery<GetRepositoriesData>(GET_REPOSITORIES, {
-    fetchPolicy: 'cache-and-network', // Сначала берем из кэша, но параллельно обновляем из сети
+    fetchPolicy: 'cache-and-network',
+    variables, // Хук автоматически перезапустит запрос при изменении этих параметров!
   });
 
-  // Преобразуем сложную GraphQL-структуру edges/node в плоский массив для FlatList
   const repositoryNodes = data
     ? data.repositories.edges.map((edge) => edge.node)
     : [];
