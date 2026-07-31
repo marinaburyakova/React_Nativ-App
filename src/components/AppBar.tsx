@@ -33,6 +33,11 @@ const AppBar = () => {
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
         <AppBarTab title="Repositories" to="/" />
         
+        {/* Добавили вкладку создания отзыва для авторизованных пользователей */}
+        {authorizedUser && (
+          <AppBarTab title="Create a review" to="/create-review" />
+        )}
+
         {authorizedUser ? (
           <TouchableOpacity activeOpacity={0.7} onPress={handleSignOut} style={styles.tabButton}>
             <Text style={styles.tabText}>Sign out</Text>
