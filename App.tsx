@@ -6,10 +6,10 @@ import { StatusBar } from 'expo-status-bar'
 import AppBar from './src/components/AppBar'
 import RepositoryList from './src/components/RepositoryList'
 import SignIn from './src/components/SignIn'
-import createApolloClient from './src/utils/apolloClient' // Импортируем наш клиент
-import CreateReview from './src/components/CreateReview' // Импортируем нашу форму отзывов
+import createApolloClient from './src/utils/apolloClient'
+import CreateReview from './src/components/CreateReview'
+import MyReviews from './src/components/MyReviews'
 
-// Инициализируем настроенный экземпляр Apollo Client
 const apolloClient = createApolloClient()
 
 export default function App() {
@@ -34,6 +34,7 @@ export default function App() {
                 path="/create-review"
                 element={<CreateReview />}
               />
+              <Route path="/my-reviews" element={<MyReviews />} />
             </Routes>
           </View>
         </View>

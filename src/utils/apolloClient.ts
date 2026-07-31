@@ -1,14 +1,19 @@
-import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client'
+import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
+import Constants from 'expo-constants'; 
 import AuthStorage from './authStorage';
 
+const debuggerHost = Constants.expoConfig?.hostUri?.split(':').shift();
+
 const httpLink = createHttpLink({
-  uri: 'http://192.168.0.110:4005/graphql',
-})
+  
+  uri: debuggerHost 
+    ? `http://${debuggerHost}:4005/graphql` 
+    : 'http://localhost:4005/graphql',
+});
 
 const authStorage = new AuthStorage();
 
-// Создаем специальный слой (link), который автоматически внедряет JWT-токен в каждый запрос!
 const authLink = setContext(async (_, { headers }) => {
   try {
     const accessToken = await authStorage.getAccessToken();
@@ -26,7 +31,6 @@ const authLink = setContext(async (_, { headers }) => {
 
 const createApolloClient = () => {
   return new ApolloClient({
-    // Склеиваем авторизационный слой и наш HTTP-адрес
     link: authLink.concat(httpLink),
     cache: new InMemoryCache(),
   });

@@ -28,14 +28,17 @@ const AppBar = () => {
     await apolloClient.resetStore();
   };
 
-  return (
+ return (
     <View style={styles.container}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
         <AppBarTab title="Repositories" to="/" />
         
-        {/* Добавили вкладку создания отзыва для авторизованных пользователей */}
+        {/* ИСПРАВЛЕНО: Добавили вкладку "My reviews" для вошедшего пользователя */}
         {authorizedUser && (
-          <AppBarTab title="Create a review" to="/create-review" />
+          <>
+            <AppBarTab title="Create a review" to="/create-review" />
+            <AppBarTab title="My reviews" to="/my-reviews" />
+          </>
         )}
 
         {authorizedUser ? (
